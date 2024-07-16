@@ -9,11 +9,7 @@ interface LocationSelectorProps {
   setLocation: (loc: Coordinates) => void;
 }
 
-export type LocationSelectionState =
-  | "waiting"
-  | "retrieved"
-  | "denied"
-  | "failed";
+export type LocationSelectionState = "waiting" | "denied" | "failed";
 
 export function LocationSelector({ setLocation }: LocationSelectorProps) {
   const [selectionState, setSelectionState] =
@@ -27,7 +23,6 @@ export function LocationSelector({ setLocation }: LocationSelectorProps) {
             lat: navObject.coords.latitude,
             long: navObject.coords.longitude,
           });
-          setSelectionState("retrieved");
         },
         (errObject) => {
           if (errObject.code == GeolocationPositionError.PERMISSION_DENIED) {
@@ -42,29 +37,20 @@ export function LocationSelector({ setLocation }: LocationSelectorProps) {
     }
   }, [setLocation]);
 
-  if (selectionState === "waiting") {
-    return (
-      <p>
-        {" "}
-        Waiting for geolocation... (if you deny permission you can enter
-        lat/long manually){" "}
-      </p>
-    );
-  } else if (selectionState === "retrieved") {
-    return <p> Lat/long retrieved! </p>;
-  } else {
-    return (
-      <>
+  return (
+    <>
+      {selectionState === "waiting" ? (
+        <p> Waiting for geolocation... </p>
+      ) : (
         <p>
-          {" "}
-          Location retrieval{" "}
+          Geolocation{" "}
           {selectionState === "denied" ? "permission denied" : "failed"}. Enter
           manually below{" "}
         </p>
-        <LatLongSelector setLocation={setLocation} />
-      </>
-    );
-  }
+      )}
+      <LatLongSelector setLocation={setLocation} />
+    </>
+  );
 }
 
 function LatLongSelector({ setLocation }: LocationSelectorProps) {
@@ -73,13 +59,19 @@ function LatLongSelector({ setLocation }: LocationSelectorProps) {
 
   return (
     <>
+      <label for="lat"> Latitude </label>
       <input
         value={lat}
         onChange={(e) => setLat(Number((e.target as HTMLInputElement).value))}
+        placeholder="Latitude"
+        label="lat"
       />
+      <label for="long"> Longitude </label>
       <input
         value={long}
         onChange={(e) => setLong(Number((e.target as HTMLInputElement).value))}
+        placeholder="Longitude"
+        label="long"
       />
       <button onClick={() => setLocation({ lat, long })}> Submit </button>
     </>
