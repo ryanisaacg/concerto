@@ -43,7 +43,7 @@ async fn client_task(
     });
 
     loop {
-        let Some(Ok(Message::Text(initial))) = dbg!(ws_recv.next().await) else {
+        let Some(Ok(Message::Text(initial))) = ws_recv.next().await else {
             panic!("initial message must be join")
         };
         let JoinMessage { id, coords }: JoinMessage = serde_json::from_str(&initial)?;
@@ -52,7 +52,7 @@ async fn client_task(
             sender.send(ServerPing {
                 id: id.clone(),
                 coords,
-                timestamp: SystemTime::now(),
+                timestamp: SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis() as f64,
             })?;
         }
     }
@@ -79,5 +79,5 @@ enum ClientMessage {
 struct ServerPing {
     id: String,
     coords: LatLong,
-    timestamp: SystemTime,
+    timestamp: f64,
 }

@@ -12,7 +12,7 @@ import { Coordinates } from "./location";
 export function metersBetweenCoords(
   coordA: Coordinates,
   coordB: Coordinates,
-  radiusInMeters: number = 6_378_137
+  radiusInMeters: number = 6_378_137,
 ): number {
   const dLat = toRadians(coordB.lat) - toRadians(coordA.lat);
   const dLon = toRadians(coordB.long) - toRadians(coordA.long);
@@ -28,4 +28,24 @@ export function metersBetweenCoords(
 
 function toRadians(degrees: number): number {
   return (degrees * Math.PI) / 180;
+}
+
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export function projectToXY(
+  location: Coordinates,
+  point: Coordinates,
+  screen_width: number,
+  screen_height: number,
+): Position {
+  const x = location.lat - point.lat;
+  const y = location.long - point.long;
+
+  return {
+    x: (x * screen_width) / 2 + screen_width / 2,
+    y: (y * screen_height) / 2 + screen_height / 2,
+  };
 }

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import "./app.css";
-import { Canvas } from "./canvas";
+import { Canvas, CanvasPoint } from "./canvas";
 import { Coordinates, LocationSelector } from "./location";
-import { metersBetweenCoords } from "./distance";
+import { metersBetweenCoords, projectToXY } from "./distance";
 import { ServerPing, SyncClient } from "./sync";
 
 export function App() {
@@ -32,12 +32,36 @@ export function App() {
   );
 }
 
+const WIDTH = 800;
+const HEIGHT = 600;
+
 function SyncReady({ client }: { client: SyncClient }) {
-  const points = useRef([]);
+  const pointsRef = useRef<Map<string, CanvasPoint>>(new Map());
 
   useEffect(() => {
+    const points = pointsRef.current;
     const callback = (ping: ServerPing) => {
-      console.log(ping);
+      console.log(Date.now(), ping.timestamp);
+
+      let point = points.get(ping.id);
+
+      if (point == null) {
+        const { x, y } = projectToXY(
+          client.coordinates,
+          ping.coords,
+          WIDTH,
+          HEIGHT,
+        );
+        point = {
+          x,
+          y,
+          color: randomColor(),
+          pings: [],
+        };
+        points.set(ping.id, point);
+      }
+
+      point.pings.push({ startTime: ping.timestamp });
     };
     client.subscribe(callback);
     return () => client.unsubscribe(callback);
@@ -46,7 +70,16 @@ function SyncReady({ client }: { client: SyncClient }) {
   return (
     <>
       <button onClick={() => client.ping()}>Ping</button>
-      <Canvas points={points.current} />
+      <Canvas points={pointsRef.current} width={WIDTH} height={HEIGHT} />
     </>
   );
+}
+
+function randomColor(): string {
+  const randomBetween = (min: number, max: number) =>
+    min + Math.floor(Math.random() * (max - min + 1));
+  const r = randomBetween(0, 255);
+  const g = randomBetween(0, 255);
+  const b = randomBetween(0, 255);
+  return `rgb(${r},${g},${b})`;
 }
