@@ -1,5 +1,6 @@
 import { RefObject } from "preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
+import { SPEED_OF_SOUND_PIXEL_PER_MS } from "./distance";
 
 interface CanvasProps {
   points: Map<string, CanvasPoint>;
@@ -38,8 +39,7 @@ export function Canvas({ points, width, height }: CanvasProps) {
   );
 }
 
-const RADIUS = 4;
-const PIXELS_PER_MILLISECOND = 0.005;
+const RADIUS = 3;
 
 function render(
   ctx: CanvasRenderingContext2D,
@@ -60,7 +60,7 @@ function render(
 
     for (const ping of point.pings) {
       const elapsed = Date.now() - ping.startTime;
-      const radius = elapsed * PIXELS_PER_MILLISECOND;
+      const radius = elapsed * SPEED_OF_SOUND_PIXEL_PER_MS;
       ctx.beginPath();
       ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI);
       ctx.stroke();

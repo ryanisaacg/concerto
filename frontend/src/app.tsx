@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import "./app.css";
 import { Canvas, CanvasPoint } from "./canvas";
 import { Coordinates, LocationSelector } from "./location";
-import { metersBetweenCoords, projectToXY } from "./distance";
+import { metersBetweenCoords, projectToPixels } from "./distance";
 import { ServerPing, SyncClient } from "./sync";
 import { PianoRoll } from "./piano";
 import { AudioPlayer, Note } from "./player";
@@ -10,6 +10,7 @@ import { AudioPlayer, Note } from "./player";
 export function App() {
   const [location, setLocation] = useState<Coordinates | null>(null);
   const [syncClient, setSyncClient] = useState<SyncClient | null>(null);
+  console.log("you are at ", location);
 
   useEffect(() => {
     if (location == null) {
@@ -17,12 +18,6 @@ export function App() {
     }
     SyncClient.connect("ws://localhost:9003", location).then(setSyncClient);
   }, [location]);
-
-  const brooklyn = { lat: 40.6782, long: -73.949997 };
-  if (location != null) {
-    console.log(location);
-    console.log(metersBetweenCoords(location, brooklyn));
-  }
 
   return (
     <>
@@ -40,7 +35,7 @@ const HEIGHT = 600;
 function SyncReady({ client }: { client: SyncClient }) {
   const pointsRef = useRef<Map<string, CanvasPoint>>(new Map());
   const player = new AudioPlayer(); // TODO memo
-  const onPlay = (note: Note) => {
+  const onPianoPlay = (note: Note) => {
     player.play(note);
     client.play(note);
   };
@@ -48,28 +43,30 @@ function SyncReady({ client }: { client: SyncClient }) {
   useEffect(() => {
     const points = pointsRef.current;
     const callback = (ping: ServerPing) => {
-      console.log(Date.now(), ping.timestamp);
-
       let point = points.get(ping.id);
 
       if (point == null) {
-        const { x, y } = projectToXY(
-          client.coordinates,
-          ping.coords,
-          WIDTH,
-          HEIGHT,
-        );
+        let { x, y } = projectToPixels(client.coordinates, ping.coords);
+        x += WIDTH / 2;
+        y += HEIGHT / 2;
+        console.log(x, y);
         point = {
           x,
           y,
-          color: randomColor(),
+          color: ping.id === client.id ? "black" : randomColor(),
           pings: [],
         };
         points.set(ping.id, point);
-        console.log(ping.note);
       }
 
       point.pings.push({ startTime: ping.timestamp });
+
+      if (ping.id != client.id) {
+        const distanceM = metersBetweenCoords(client.coordinates, ping.coords);
+        const speedOfSoundInWaterMpS = 1_500;
+        const timeToNoteS = distanceM / speedOfSoundInWaterMpS;
+        setTimeout(() => player.play(ping.note), timeToNoteS * 1000);
+      }
     };
     client.subscribe(callback);
     return () => client.unsubscribe(callback);
@@ -78,7 +75,7 @@ function SyncReady({ client }: { client: SyncClient }) {
   return (
     <>
       <Canvas points={pointsRef.current} width={WIDTH} height={HEIGHT} />
-      <PianoRoll play={onPlay} />
+      <PianoRoll play={onPianoPlay} />
     </>
   );
 }

@@ -35,17 +35,33 @@ export interface Position {
   y: number;
 }
 
-export function projectToXY(
-  location: Coordinates,
-  point: Coordinates,
-  screen_width: number,
-  screen_height: number,
-): Position {
-  const x = location.lat - point.lat;
-  const y = location.long - point.long;
+export const METERS_PER_PIXEL = 200;
+export const SPEED_OF_SOUND_M_PER_S = 1_500;
+export const SPEED_OF_SOUND_PIXEL_PER_MS =
+  SPEED_OF_SOUND_M_PER_S / METERS_PER_PIXEL / 1000;
 
-  return {
-    x: (x * screen_width) / 2 + screen_width / 2,
-    y: (y * screen_height) / 2 + screen_height / 2,
-  };
+export function projectToPixels(
+  startLocation: Coordinates,
+  point: Coordinates,
+): Position {
+  let distance = metersBetweenCoords(startLocation, point);
+  distance = Number.isNaN(distance) ? 0 : distance;
+  const vector = normalize({
+    x: startLocation.lat - point.lat,
+    y: startLocation.long - point.long,
+  });
+  vector.x *= distance / METERS_PER_PIXEL;
+  vector.y *= distance / METERS_PER_PIXEL;
+
+  return vector;
+}
+
+export function normalize(val: Position): Position {
+  const length = Math.sqrt(val.x ** 2 + val.y ** 2);
+  return length === 0
+    ? { x: 0, y: 0 }
+    : {
+        x: val.x / length,
+        y: val.y / length,
+      };
 }

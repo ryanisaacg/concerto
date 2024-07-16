@@ -45,9 +45,6 @@ export class SyncClient {
 
   private message_recv(e: MessageEvent) {
     const data: ServerPing = JSON.parse(e.data);
-    if (data.id == this.id) {
-      return;
-    }
     for (const callback of this.callbacks) {
       callback(data);
     }
