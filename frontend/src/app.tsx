@@ -4,6 +4,7 @@ import { Canvas, CanvasPoint } from "./canvas";
 import { Coordinates, LocationSelector } from "./location";
 import { metersBetweenCoords, projectToXY } from "./distance";
 import { ServerPing, SyncClient } from "./sync";
+import { PianoRoll } from "./piano";
 
 export function App() {
   const [location, setLocation] = useState<Coordinates | null>(null);
@@ -71,6 +72,7 @@ function SyncReady({ client }: { client: SyncClient }) {
     <>
       <button onClick={() => client.ping()}>Ping</button>
       <Canvas points={pointsRef.current} width={WIDTH} height={HEIGHT} />
+      <PianoRoll />
     </>
   );
 }
