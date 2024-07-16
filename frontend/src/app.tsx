@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import "./app.css";
 import { Canvas, CanvasPoint } from "./canvas";
 import { Coordinates, LocationSelector } from "./location";
-import { metersBetweenCoords, projectToPixels } from "./distance";
+import {
+  metersBetweenCoords,
+  projectToPixels,
+  SPEED_OF_SOUND_M_PER_S,
+} from "./distance";
 import { ServerPing, SyncClient } from "./sync";
 import { PianoRoll } from "./piano";
 import { AudioPlayer, Note } from "./player";
@@ -63,8 +67,8 @@ function SyncReady({ client }: { client: SyncClient }) {
 
       if (ping.id != client.id) {
         const distanceM = metersBetweenCoords(client.coordinates, ping.coords);
-        const speedOfSoundInWaterMpS = 1_500;
-        const timeToNoteS = distanceM / speedOfSoundInWaterMpS;
+        const timeToNoteS = distanceM / SPEED_OF_SOUND_M_PER_S;
+        console.log(`Playing ${ping.note} in ${timeToNoteS}`);
         setTimeout(() => player.play(ping.note), timeToNoteS * 1000);
       }
     };
@@ -74,7 +78,12 @@ function SyncReady({ client }: { client: SyncClient }) {
 
   return (
     <>
-      <Canvas points={pointsRef.current} width={WIDTH} height={HEIGHT} />
+      <Canvas
+        points={pointsRef.current}
+        width={WIDTH}
+        height={HEIGHT}
+        coords={client.coordinates}
+      />
       <PianoRoll play={onPianoPlay} />
     </>
   );
