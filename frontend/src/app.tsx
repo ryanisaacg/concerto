@@ -20,7 +20,9 @@ export function App() {
     if (location == null) {
       return;
     }
-    SyncClient.connect("ws://localhost:9003", location).then(setSyncClient);
+    SyncClient.connect("wss://three-carpets-build.loca.lt", location).then(
+      setSyncClient,
+    );
   }, [location]);
 
   return (
@@ -46,6 +48,14 @@ function SyncReady({ client }: { client: SyncClient }) {
 
   useEffect(() => {
     const points = pointsRef.current;
+
+    points.set(client.id, {
+      x: WIDTH / 2,
+      y: HEIGHT / 2,
+      color: "black",
+      pings: [],
+    });
+
     const callback = (ping: ServerPing) => {
       let point = points.get(ping.id);
 

@@ -21,11 +21,15 @@ export class AudioPlayer {
 
       gainNode.connect(this.ctx.destination);
       this.keys.set(note, gainNode);
+      gainNode.gain.value = 0.3;
     }
 
     gainNode.gain.cancelScheduledValues(this.ctx.currentTime + 0.1);
-    gainNode.gain.setValueAtTime(1, this.ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.1, this.ctx.currentTime + 0.7);
+    gainNode.gain.setValueAtTime(0.3, this.ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.05,
+      this.ctx.currentTime + 0.7,
+    );
     gainNode.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.8);
   }
 }
