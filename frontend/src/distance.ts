@@ -35,8 +35,8 @@ export interface Position {
   y: number;
 }
 
-export const METERS_PER_PIXEL = 8000;
-export const SPEED_OF_SOUND_M_PER_S = 15_000;
+export const METERS_PER_PIXEL = 100;
+export const SPEED_OF_SOUND_M_PER_S = 1_500;
 export const SPEED_OF_SOUND_PIXEL_PER_MS =
   SPEED_OF_SOUND_M_PER_S / METERS_PER_PIXEL / 1000;
 
@@ -47,7 +47,7 @@ export function projectToPixels(
   let distance = metersBetweenCoords(startLocation, point);
   distance = Number.isNaN(distance) ? 0 : distance;
   const vector = normalize({
-    x: startLocation.long - point.long,
+    x: -(startLocation.long - point.long),
     y: startLocation.lat - point.lat,
   });
   vector.x *= distance / METERS_PER_PIXEL;
