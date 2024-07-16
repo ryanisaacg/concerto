@@ -53,6 +53,35 @@ export function LocationSelector({ setLocation }: LocationSelectorProps) {
   } else if (selectionState === "retrieved") {
     return <p> Lat/long retrieved! </p>;
   } else {
-    return <p> TODO: lat/long selector </p>;
+    return (
+      <>
+        <p>
+          {" "}
+          Location retrieval{" "}
+          {selectionState === "denied" ? "permission denied" : "failed"}. Enter
+          manually below{" "}
+        </p>
+        <LatLongSelector setLocation={setLocation} />
+      </>
+    );
   }
+}
+
+function LatLongSelector({ setLocation }: LocationSelectorProps) {
+  const [lat, setLat] = useState(0);
+  const [long, setLong] = useState(0);
+
+  return (
+    <>
+      <input
+        value={lat}
+        onChange={(e) => setLat(Number((e.target as HTMLInputElement).value))}
+      />
+      <input
+        value={long}
+        onChange={(e) => setLong(Number((e.target as HTMLInputElement).value))}
+      />
+      <button onClick={() => setLocation({ lat, long })}> Submit </button>
+    </>
+  );
 }
