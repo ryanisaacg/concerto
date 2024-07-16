@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import "./app.css";
 import { Canvas, CanvasPoint } from "./canvas";
 import { Coordinates, LocationSelector } from "./location";
 import { metersBetweenCoords, projectToXY } from "./distance";
 import { ServerPing, SyncClient } from "./sync";
 import { PianoRoll } from "./piano";
+import { AudioPlayer } from "./player";
 
 export function App() {
   const [location, setLocation] = useState<Coordinates | null>(null);
@@ -22,6 +23,8 @@ export function App() {
     console.log(location);
     console.log(metersBetweenCoords(location, brooklyn));
   }
+  const player = new AudioPlayer(); // TODO memo
+  const onPlay = () => player.note();
 
   return (
     <>
@@ -29,6 +32,7 @@ export function App() {
         <LocationSelector setLocation={setLocation} />
       ) : null}
       {syncClient != null ? <SyncReady client={syncClient} /> : null}
+      <PianoRoll play={onPlay} />
     </>
   );
 }
@@ -70,9 +74,7 @@ function SyncReady({ client }: { client: SyncClient }) {
 
   return (
     <>
-      <button onClick={() => client.ping()}>Ping</button>
       <Canvas points={pointsRef.current} width={WIDTH} height={HEIGHT} />
-      <PianoRoll />
     </>
   );
 }
