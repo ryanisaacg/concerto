@@ -68,8 +68,11 @@ function SyncReady({ client }: { client: SyncClient }) {
       if (ping.id != client.id) {
         const distanceM = metersBetweenCoords(client.coordinates, ping.coords);
         const timeToNoteS = distanceM / SPEED_OF_SOUND_M_PER_S;
-        console.log(`Playing ${ping.note} in ${timeToNoteS}`);
-        setTimeout(() => player.play(ping.note), timeToNoteS * 1000);
+        const playInMS = timeToNoteS * 1000 - (Date.now() - ping.timestamp);
+        if (playInMS > 0) {
+          console.log(`Playing ${ping.note} in ${playInMS}`);
+          setTimeout(() => player.play(ping.note), playInMS);
+        }
       }
     };
     client.subscribe(callback);

@@ -8,6 +8,7 @@ export class SyncClient {
   id: string;
   callbacks: Set<Callback>;
   coordinates: Coordinates;
+  messages: ServerPing[];
 
   constructor(socket: WebSocket, id: string, coordinates: Coordinates) {
     this.socket = socket;
@@ -15,6 +16,7 @@ export class SyncClient {
     this.socket.onmessage = (e) => this.message_recv(e);
     this.callbacks = new Set();
     this.coordinates = coordinates;
+    this.messages = [];
   }
 
   static async connect(
@@ -37,6 +39,9 @@ export class SyncClient {
 
   subscribe(callback: Callback) {
     this.callbacks.add(callback);
+    for (const message of this.messages) {
+      callback(message);
+    }
   }
 
   unsubscribe(callback: Callback) {
@@ -48,6 +53,7 @@ export class SyncClient {
     for (const callback of this.callbacks) {
       callback(data);
     }
+    this.messages.push(data);
   }
 }
 
