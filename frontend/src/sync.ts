@@ -18,7 +18,7 @@ export class SyncClient {
 
   static async connect(
     url: string,
-    coordinates: Coordinates
+    coordinates: Coordinates,
   ): Promise<SyncClient> {
     const socket = new WebSocket(url);
     const id = Math.random().toString(16).slice(2);
@@ -45,6 +45,9 @@ export class SyncClient {
 
   private message_recv(e: MessageEvent) {
     const data: ServerPing = JSON.parse(e.data);
+    if (data.id == this.id) {
+      return;
+    }
     for (const callback of this.callbacks) {
       callback(data);
     }
@@ -52,7 +55,7 @@ export class SyncClient {
 }
 
 export interface ServerPing {
-  id: String;
+  id: string;
   coords: Coordinates;
   timestamp: number;
 }
