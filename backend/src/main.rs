@@ -48,11 +48,29 @@ async fn client_task(
         };
         let JoinMessage { id, coords }: JoinMessage = serde_json::from_str(&initial)?;
         while let Some(message) = ws_recv.next().await {
-            //let _: ClientMessage = serde_json::from_str(message?.to_text()?)?;
+            let note: Note = match message?.to_text()? {
+                "C" => Note::C,
+                "C#" => Note::CSharp,
+                "D" => Note::D,
+                "D#" => Note::DSharp,
+                "E" => Note::E,
+                "F" => Note::F,
+                "F#" => Note::FSharp,
+                "G" => Note::G,
+                "G#" => Note::GSharp,
+                "A" => Note::A,
+                "A#" => Note::ASharp,
+                "B" => Note::B,
+                _ => unimplemented!(),
+            };
             sender.send(ServerPing {
                 id: id.clone(),
                 coords,
-                timestamp: SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_millis() as f64,
+                timestamp: SystemTime::now()
+                    .duration_since(SystemTime::UNIX_EPOCH)
+                    .unwrap()
+                    .as_millis() as f64,
+                note,
             })?;
         }
     }
@@ -70,9 +88,25 @@ struct JoinMessage {
     coords: LatLong,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-enum ClientMessage {
-    Ping,
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+enum Note {
+    C,
+    #[serde(rename = "C#")]
+    CSharp,
+    D,
+    #[serde(rename = "D#")]
+    DSharp,
+    E,
+    F,
+    #[serde(rename = "F#")]
+    FSharp,
+    G,
+    #[serde(rename = "G#")]
+    GSharp,
+    A,
+    #[serde(rename = "A#")]
+    ASharp,
+    B,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -80,4 +114,5 @@ struct ServerPing {
     id: String,
     coords: LatLong,
     timestamp: f64,
+    note: Note,
 }

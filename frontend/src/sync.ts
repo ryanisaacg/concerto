@@ -1,4 +1,5 @@
 import { Coordinates } from "./location";
+import { Note } from "./player";
 
 export type Callback = (ping: ServerPing) => void;
 
@@ -26,13 +27,12 @@ export class SyncClient {
     await new Promise((resolve) => {
       socket.onopen = resolve;
     });
-    console.log(JSON.stringify({ coords: coordinates, id }));
     socket.send(JSON.stringify({ coords: coordinates, id }));
     return client;
   }
 
-  async ping(): Promise<void> {
-    this.socket.send("Ping");
+  async play(note: Note): Promise<void> {
+    this.socket.send(note);
   }
 
   subscribe(callback: Callback) {
@@ -58,4 +58,5 @@ export interface ServerPing {
   id: string;
   coords: Coordinates;
   timestamp: number;
+  note: Note;
 }

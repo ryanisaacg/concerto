@@ -23,8 +23,6 @@ export function App() {
     console.log(location);
     console.log(metersBetweenCoords(location, brooklyn));
   }
-  const player = new AudioPlayer(); // TODO memo
-  const onPlay = (note: Note) => player.play(note);
 
   return (
     <>
@@ -32,7 +30,6 @@ export function App() {
         <LocationSelector setLocation={setLocation} />
       ) : null}
       {syncClient != null ? <SyncReady client={syncClient} /> : null}
-      <PianoRoll play={onPlay} />
     </>
   );
 }
@@ -42,6 +39,11 @@ const HEIGHT = 600;
 
 function SyncReady({ client }: { client: SyncClient }) {
   const pointsRef = useRef<Map<string, CanvasPoint>>(new Map());
+  const player = new AudioPlayer(); // TODO memo
+  const onPlay = (note: Note) => {
+    player.play(note);
+    client.play(note);
+  };
 
   useEffect(() => {
     const points = pointsRef.current;
@@ -64,6 +66,7 @@ function SyncReady({ client }: { client: SyncClient }) {
           pings: [],
         };
         points.set(ping.id, point);
+        console.log(ping.note);
       }
 
       point.pings.push({ startTime: ping.timestamp });
@@ -75,6 +78,7 @@ function SyncReady({ client }: { client: SyncClient }) {
   return (
     <>
       <Canvas points={pointsRef.current} width={WIDTH} height={HEIGHT} />
+      <PianoRoll play={onPlay} />
     </>
   );
 }
