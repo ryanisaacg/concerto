@@ -7,7 +7,7 @@ const NOTE_SPEED = 0.005;
 
 export function Visualizer() {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
-  const sceneRotation = useRef(new THREE.Vector3());
+  const addNote = useRef<((note: Note) => void) | null>(null);
 
   useEffect(() => {
     if (canvas == null) {
@@ -35,6 +35,7 @@ export function Visualizer() {
         transparent: true,
       }),
     );
+    console.log(sphere.position);
     root.add(sphere);
 
     const wireframe = new THREE.LineSegments(
@@ -50,21 +51,26 @@ export function Visualizer() {
 
     const circles = new Map();
 
-    const notes = [
-      new Note(40, -73, 1, "red"),
-      new Note(34, -118, 0, "orange"),
-      new Note(48, 2.35, 0.25, "yellow"),
-      new Note(0, 0, 0.5, "purple"),
-    ];
-    for (const note of notes) {
-      note.addTo(root);
-    }
+    const notes: Note[] = [];
+    addNote.current = (note) => {
+      root.add(note.circle);
+      notes.push(note);
+    };
 
     root.rotation.z = (23.5 * Math.PI) / 180;
 
     function animate() {
       for (const note of notes) {
         note.tick(RADIUS, circles);
+      }
+      let i = 0;
+      while (i < notes.length) {
+        if (notes[i].progress >= RADIUS) {
+          root.remove(notes[i].circle);
+          notes.splice(i, 1);
+        } else {
+          i += 1;
+        }
       }
 
       root.rotation.y += 0.0005;
@@ -77,33 +83,34 @@ export function Visualizer() {
     <div style={{ display: "flex", flexDirection: "row" }}>
       <canvas ref={setCanvas} width={800} height={600} />
       <div>
-        <input
-          type="number"
-          value={sceneRotation.current.x}
-          onChange={(e) =>
-            (sceneRotation.current.x = Number(
-              (e.target as HTMLInputElement).value,
-            ))
+        <button
+          onClick={() =>
+            addNote.current?.(new Note(40.69, -73.98, -RADIUS, 0x00ffaa))
           }
-        />
-        <input
-          type="number"
-          value={sceneRotation.current.y}
-          onChange={(e) =>
-            (sceneRotation.current.y = Number(
-              (e.target as HTMLInputElement).value,
-            ))
+        >
+          Brooklyn
+        </button>
+        <button
+          onClick={() =>
+            addNote.current?.(new Note(48.86, 2.35, -RADIUS, 0x00ffaa))
           }
-        />
-        <input
-          type="number"
-          value={sceneRotation.current.z}
-          onChange={(e) =>
-            (sceneRotation.current.z = Number(
-              (e.target as HTMLInputElement).value,
-            ))
+        >
+          Paris
+        </button>
+        <button
+          onClick={() =>
+            addNote.current?.(new Note(28.7, 77.1, -RADIUS, 0x00ffaa))
           }
-        />
+        >
+          New Delhi
+        </button>
+        <button
+          onClick={() =>
+            addNote.current?.(new Note(-37.81, 144.96, -RADIUS, 0x00ffaa))
+          }
+        >
+          Melbourne
+        </button>
       </div>
     </div>
   );
@@ -200,10 +207,6 @@ class Note {
       new THREE.LineBasicMaterial({ color, linewidth: 4 }),
     );
     this.circle.applyQuaternion(this.quat);
-  }
-
-  addTo(parent: THREE.Object3D) {
-    parent.add(this.circle);
   }
 
   tick(radius: number, circles: Map<number, THREE.CircleGeometry>) {
