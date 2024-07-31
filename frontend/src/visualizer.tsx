@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import * as THREE from "three";
 import { Material } from "three";
+import { OrbitControls } from "three/examples/jsm/Addons.js";
 
 const RADIUS = 3;
 const NOTE_SPEED = 0.005;
@@ -22,6 +23,8 @@ export function Visualizer() {
     );
     const renderer = new THREE.WebGLRenderer({ canvas });
     renderer.setSize(canvas.width, canvas.height);
+
+    const controls = new OrbitControls(camera, canvas);
 
     const root = new THREE.Group();
 
@@ -60,6 +63,7 @@ export function Visualizer() {
     root.rotation.z = (23.5 * Math.PI) / 180;
 
     function animate() {
+      controls.update();
       for (const note of notes) {
         note.tick(RADIUS, circles);
       }
