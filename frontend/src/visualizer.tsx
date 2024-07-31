@@ -84,25 +84,12 @@ async function run(
   earth.wrapS = THREE.RepeatWrapping;
   earth.wrapT = THREE.RepeatWrapping;
   const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(RADIUS - 0.01, 32, 16),
+    new THREE.SphereGeometry(RADIUS - 0.01, 64, 32),
     new THREE.MeshBasicMaterial({
       map: earth,
-      side: THREE.DoubleSide,
     }),
   );
   root.add(sphere);
-
-  const floorGeometry = new THREE.PlaneGeometry(500, 500, 128, 128);
-  const floorMaterial = new THREE.MeshStandardMaterial({
-    color: "#777777",
-    metalness: 0.2,
-    roughness: 0.6,
-    envMapIntensity: 0.5,
-    side: THREE.DoubleSide,
-    map: earth,
-  });
-  const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-  root.add(floor);
 
   const wireframe = new THREE.LineSegments(
     new THREE.WireframeGeometry(new THREE.SphereGeometry(RADIUS, 32, 16)),
