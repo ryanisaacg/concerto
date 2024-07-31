@@ -25,12 +25,11 @@ export function Visualizer() {
     camera.position.z = 5;
 
     const geometry = new THREE.SphereGeometry(2, 32, 16);
-    const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    /*const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
     material.opacity = 0.75;
     material.transparent = true;
     const sphere = new THREE.Mesh(geometry, material);
-
-    root.add(sphere);
+    root.add(sphere);*/
 
     const wireframeGeometry = new THREE.WireframeGeometry(geometry);
 
@@ -41,44 +40,22 @@ export function Visualizer() {
     mat.transparent = true;
     root.add(wireframe);
 
-    const circle = new THREE.LineLoop(
-      createCircle(2),
-      new THREE.LineBasicMaterial({ color: "red" }),
-    );
-
-    const lat = 40;
-    const long = -73;
-
-    const newJerseyQuat = latLongToQuat(lat, long);
-    circle.applyQuaternion(newJerseyQuat);
-    root.add(circle);
-
-    let circleSpeed = 0.01;
-    let circleProgress = 2;
-
     scene.add(root);
 
     const circles = new Map();
 
-    function animate() {
-      circle.position.set(0, 0, 1); // (0, 0, 1) produces the same direction as the rotation
-      circle.position.applyQuaternion(newJerseyQuat);
-      circle.position.multiplyScalar(circleProgress);
+    const notes = [
+      new Note(40, -73, 1, "red"),
+      new Note(40, -73, 0, "green"),
+      new Note(48, 2.35, 0.25, "blue"),
+    ];
+    for (const note of notes) {
+      note.addTo(root);
+    }
 
-      circleProgress += circleSpeed;
-      if (circleProgress >= 2) {
-        circleSpeed = -0.01;
-      } else if (circleProgress <= -2) {
-        circleSpeed = 0.01;
-      }
-      const chordLength = Math.sqrt(4 - Math.abs(circleProgress ** 2));
-      if (chordLength > 0.0001) {
-        let geometry = circles.get(chordLength);
-        if (geometry == null) {
-          geometry = createCircle(chordLength);
-          circles.set(chordLength, geometry);
-        }
-        circle.geometry = geometry;
+    function animate() {
+      for (const note of notes) {
+        note.tick(2, circles);
       }
 
       root.rotation.x = (sceneRotation.current.x * Math.PI) / 180;
@@ -194,4 +171,54 @@ function lineSegment(
 
   const geometry = new THREE.BufferGeometry().setFromPoints(points);
   return new THREE.Line(geometry, material);
+}
+
+class Note {
+  quat: THREE.Quaternion;
+  progress: number;
+  speed: number;
+  circle: THREE.LineLoop;
+
+  constructor(
+    lat: number,
+    long: number,
+    progress: number,
+    color: THREE.ColorRepresentation,
+  ) {
+    this.quat = latLongToQuat(lat, long);
+    this.progress = progress;
+    this.speed = 0.01;
+    this.circle = new THREE.LineLoop(
+      createCircle(2),
+      new THREE.LineBasicMaterial({ color }),
+    );
+    this.circle.applyQuaternion(this.quat);
+  }
+
+  addTo(parent: THREE.Object3D) {
+    parent.add(this.circle);
+  }
+
+  tick(radius: number, circles: Map<number, THREE.CircleGeometry>) {
+    this.circle.position.set(0, 0, 1); // (0, 0, 1) produces the same direction as the rotation
+    this.circle.position.applyQuaternion(this.quat);
+    this.circle.position.multiplyScalar(this.progress);
+
+    this.progress += this.speed;
+    if (this.progress >= radius) {
+      this.speed = -Math.abs(this.speed);
+    } else if (this.progress <= -radius) {
+      this.speed = Math.abs(this.speed);
+    }
+
+    const chordLength = Math.sqrt(radius ** 2 - Math.abs(this.progress ** 2));
+    if (chordLength > 0.0001) {
+      let geometry = circles.get(chordLength);
+      if (geometry == null) {
+        geometry = createCircle(chordLength);
+        circles.set(chordLength, geometry);
+      }
+      this.circle.geometry = geometry;
+    }
+  }
 }
