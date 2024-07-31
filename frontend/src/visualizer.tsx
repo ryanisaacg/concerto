@@ -186,7 +186,7 @@ function createCircle(radius: number) {
   return circleGeometry;
 }
 
-function latLongToVec(lat: number, long: number): THREE.Vector3 {
+export function latLongToVec(lat: number, long: number): THREE.Vector3 {
   // Adapted from https://stackoverflow.com/questions/10473852/convert-latitude-and-longitude-to-point-in-3d-space
   /*
    *     f  = 0                              # flattening
