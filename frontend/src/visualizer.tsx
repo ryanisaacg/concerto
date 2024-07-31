@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import * as THREE from "three";
 import { Material } from "three";
 
+const RADIUS = 3;
+const NOTE_SPEED = 0.005;
+
 export function Visualizer() {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const sceneRotation = useRef(new THREE.Vector3());
@@ -24,16 +27,19 @@ export function Visualizer() {
 
     camera.position.z = 5;
 
-    const geometry = new THREE.SphereGeometry(2, 32, 16);
-    /*const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
-    material.opacity = 0.75;
-    material.transparent = true;
-    const sphere = new THREE.Mesh(geometry, material);
-    root.add(sphere);*/
+    const sphere = new THREE.Mesh(
+      new THREE.SphereGeometry(RADIUS - 0.01, 32, 16),
+      new THREE.MeshBasicMaterial({
+        color: 0x0000aa,
+        opacity: 0.85,
+        transparent: true,
+      }),
+    );
+    root.add(sphere);
 
-    const wireframeGeometry = new THREE.WireframeGeometry(geometry);
-
-    const wireframe = new THREE.LineSegments(wireframeGeometry);
+    const wireframe = new THREE.LineSegments(
+      new THREE.WireframeGeometry(new THREE.SphereGeometry(RADIUS, 32, 16)),
+    );
     const mat = wireframe.material as Material;
     mat.depthTest = false;
     mat.opacity = 0.25;
@@ -46,21 +52,22 @@ export function Visualizer() {
 
     const notes = [
       new Note(40, -73, 1, "red"),
-      new Note(40, -73, 0, "green"),
-      new Note(48, 2.35, 0.25, "blue"),
+      new Note(34, -118, 0, "orange"),
+      new Note(48, 2.35, 0.25, "yellow"),
+      new Note(0, 0, 0.5, "purple"),
     ];
     for (const note of notes) {
       note.addTo(root);
     }
 
+    root.rotation.z = (23.5 * Math.PI) / 180;
+
     function animate() {
       for (const note of notes) {
-        note.tick(2, circles);
+        note.tick(RADIUS, circles);
       }
 
-      root.rotation.x = (sceneRotation.current.x * Math.PI) / 180;
-      root.rotation.y = (sceneRotation.current.y * Math.PI) / 180;
-      root.rotation.z = (sceneRotation.current.z * Math.PI) / 180;
+      root.rotation.y += 0.0005;
       renderer.render(scene, camera);
     }
     renderer.setAnimationLoop(animate);
@@ -103,7 +110,7 @@ export function Visualizer() {
 }
 
 function createCircle(radius: number) {
-  const circleGeometry = new THREE.CircleGeometry(radius, 32);
+  const circleGeometry = new THREE.CircleGeometry(radius, 64);
 
   // Remove center vertex
   const itemSize = 3;
@@ -187,10 +194,10 @@ class Note {
   ) {
     this.quat = latLongToQuat(lat, long);
     this.progress = progress;
-    this.speed = 0.01;
+    this.speed = NOTE_SPEED;
     this.circle = new THREE.LineLoop(
       createCircle(2),
-      new THREE.LineBasicMaterial({ color }),
+      new THREE.LineBasicMaterial({ color, linewidth: 4 }),
     );
     this.circle.applyQuaternion(this.quat);
   }
