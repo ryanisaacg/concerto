@@ -5,7 +5,7 @@ import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { RefObject } from "preact";
 
 const RADIUS = 3;
-const NOTE_SPEED = 0.005;
+const NOTE_SPEED = 0.0000027;
 
 export function Visualizer() {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
