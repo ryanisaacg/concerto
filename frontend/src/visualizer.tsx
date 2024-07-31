@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import * as THREE from "three";
 import { Material } from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
+import { RefObject } from "preact";
 
 const RADIUS = 3;
 const NOTE_SPEED = 0.005;
@@ -14,73 +15,7 @@ export function Visualizer() {
     if (canvas == null) {
       return;
     }
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      canvas.width / canvas.height,
-      0.1,
-      1000,
-    );
-    const renderer = new THREE.WebGLRenderer({ canvas });
-    renderer.setSize(canvas.width, canvas.height);
-
-    const controls = new OrbitControls(camera, canvas);
-
-    const root = new THREE.Group();
-
-    camera.position.z = 5;
-
-    const sphere = new THREE.Mesh(
-      new THREE.SphereGeometry(RADIUS - 0.01, 32, 16),
-      new THREE.MeshBasicMaterial({
-        color: 0x0000aa,
-        opacity: 0.85,
-        transparent: true,
-      }),
-    );
-    console.log(sphere.position);
-    root.add(sphere);
-
-    const wireframe = new THREE.LineSegments(
-      new THREE.WireframeGeometry(new THREE.SphereGeometry(RADIUS, 32, 16)),
-    );
-    const mat = wireframe.material as Material;
-    mat.depthTest = false;
-    mat.opacity = 0.25;
-    mat.transparent = true;
-    root.add(wireframe);
-
-    scene.add(root);
-
-    const circles = new Map();
-
-    const notes: Note[] = [];
-    addNote.current = (note) => {
-      root.add(note.circle);
-      notes.push(note);
-    };
-
-    root.rotation.z = (23.5 * Math.PI) / 180;
-
-    function animate() {
-      controls.update();
-      for (const note of notes) {
-        note.tick(RADIUS, circles);
-      }
-      let i = 0;
-      while (i < notes.length) {
-        if (notes[i].progress >= RADIUS) {
-          root.remove(notes[i].circle);
-          notes.splice(i, 1);
-        } else {
-          i += 1;
-        }
-      }
-
-      root.rotation.y += 0.0005;
-      renderer.render(scene, camera);
-    }
-    renderer.setAnimationLoop(animate);
+    run(canvas, addNote);
   }, [canvas]);
 
   return (
@@ -89,28 +24,28 @@ export function Visualizer() {
       <div>
         <button
           onClick={() =>
-            addNote.current?.(new Note(40.69, -73.98, -RADIUS, 0x00ffaa))
+            addNote.current?.(new Note(-40.69, -73.98, -RADIUS, 0x00ffaa))
           }
         >
           Brooklyn
         </button>
         <button
           onClick={() =>
-            addNote.current?.(new Note(48.86, 2.35, -RADIUS, 0x00ffaa))
+            addNote.current?.(new Note(-48.86, 2.35, -RADIUS, 0x00ffaa))
           }
         >
           Paris
         </button>
         <button
           onClick={() =>
-            addNote.current?.(new Note(28.7, 77.1, -RADIUS, 0x00ffaa))
+            addNote.current?.(new Note(-28.7, 77.1, -RADIUS, 0x00ffaa))
           }
         >
           New Delhi
         </button>
         <button
           onClick={() =>
-            addNote.current?.(new Note(-37.81, 144.96, -RADIUS, 0x00ffaa))
+            addNote.current?.(new Note(37.81, 144.96, -RADIUS, 0x00ffaa))
           }
         >
           Melbourne
@@ -118,6 +53,92 @@ export function Visualizer() {
       </div>
     </div>
   );
+}
+
+async function run(
+  canvas: HTMLCanvasElement,
+  addNote: RefObject<(note: Note) => void>,
+) {
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(
+    75,
+    canvas.width / canvas.height,
+    0.1,
+    1000,
+  );
+  const renderer = new THREE.WebGLRenderer({ canvas });
+  renderer.setSize(canvas.width, canvas.height);
+
+  const controls = new OrbitControls(camera, canvas);
+
+  const root = new THREE.Group();
+
+  camera.position.z = 5;
+
+  const earth: THREE.Texture = new THREE.TextureLoader().load("/earth.png");
+  earth.wrapS = THREE.RepeatWrapping;
+  earth.wrapT = THREE.RepeatWrapping;
+  const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(RADIUS - 0.01, 32, 16),
+    new THREE.MeshBasicMaterial({
+      map: earth,
+      side: THREE.DoubleSide,
+    }),
+  );
+  root.add(sphere);
+
+  const floorGeometry = new THREE.PlaneGeometry(500, 500, 128, 128);
+  const floorMaterial = new THREE.MeshStandardMaterial({
+    color: "#777777",
+    metalness: 0.2,
+    roughness: 0.6,
+    envMapIntensity: 0.5,
+    side: THREE.DoubleSide,
+    map: earth,
+  });
+  const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+  root.add(floor);
+
+  const wireframe = new THREE.LineSegments(
+    new THREE.WireframeGeometry(new THREE.SphereGeometry(RADIUS, 32, 16)),
+  );
+  const mat = wireframe.material as Material;
+  mat.depthTest = false;
+  mat.opacity = 0.25;
+  mat.transparent = true;
+  //root.add(wireframe);
+
+  scene.add(root);
+
+  const circles = new Map();
+
+  const notes: Note[] = [];
+  addNote.current = (note) => {
+    root.add(note.circle);
+    notes.push(note);
+  };
+
+  root.rotation.z = (23.5 * Math.PI) / 180;
+
+  function animate() {
+    controls.update();
+    for (const note of notes) {
+      note.tick(RADIUS, circles);
+    }
+    let i = 0;
+    while (i < notes.length) {
+      if (notes[i].progress >= RADIUS) {
+        root.remove(notes[i].circle);
+        notes.splice(i, 1);
+      } else {
+        i += 1;
+      }
+    }
+
+    root.rotation.y += 0.0005;
+    renderer.render(scene, camera);
+  }
+  renderer.setAnimationLoop(animate);
 }
 
 function createCircle(radius: number) {
