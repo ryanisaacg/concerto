@@ -9,6 +9,7 @@ export function Visualizer() {
   const lineRotation = useRef(new THREE.Vector3());
 
   useEffect(() => {
+    console.log("e");
     if (canvas == null) {
       return;
     }
@@ -33,7 +34,7 @@ export function Visualizer() {
 
     const geometry = new THREE.SphereGeometry(2, 32, 16);
     const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
-    material.opacity = 0.5;
+    material.opacity = 0.75;
     material.transparent = true;
     const sphere = new THREE.Mesh(geometry, material);
 
@@ -52,16 +53,20 @@ export function Visualizer() {
       createCircle(2),
       new THREE.LineBasicMaterial({ color: "red" }),
     );
-    circle.rotation.y = Math.PI / 4;
+    //circle.rotation.y = Math.PI / 4;
     //circle.rotation.x = Math.PI / 2;
 
     const lat = 40;
     const long = -73;
 
     const newJerseyVec = latLongToVec(lat, long).normalize();
+    const newJerseyQuat = latLongToQuat(lat, long);
+    circle.applyQuaternion(newJerseyQuat);
     //circle.rotation.y = (80 * Math.PI) / 180;
     //circle.rotation.z = (-74 * Math.PI) / 180;
     root.add(circle);
+
+    //root.add(lineSegment(new THREE.Vector3(), newJerseyVec, 0x00ff00));
 
     let circleSpeed = 0.01;
     let circleProgress = 2;
@@ -69,11 +74,10 @@ export function Visualizer() {
     scene.add(root);
 
     function animate() {
-      circle.position.set(
-        newJerseyVec.x * circleProgress,
-        newJerseyVec.y * circleProgress,
-        newJerseyVec.z * circleProgress,
-      );
+      circle.position.set(0, 0, 1);
+      circle.position.applyQuaternion(newJerseyQuat);
+      circle.position.multiplyScalar(circleProgress);
+
       circleProgress += circleSpeed;
       if (circleProgress >= 2) {
         circleSpeed = -0.01;
@@ -84,9 +88,6 @@ export function Visualizer() {
         const chordLength = Math.sqrt(4 - Math.abs(circleProgress ** 2));
         circle.geometry = createCircle(chordLength);
       }
-      circle.rotation.x = (lineRotation.current.x * Math.PI) / 180;
-      circle.rotation.y = (lineRotation.current.y * Math.PI) / 180;
-      circle.rotation.z = (lineRotation.current.z * Math.PI) / 180;
 
       root.rotation.x = (sceneRotation.current.x * Math.PI) / 180;
       root.rotation.y = (sceneRotation.current.y * Math.PI) / 180;
@@ -207,6 +208,18 @@ export function latLongToVec(lat: number, long: number): THREE.Vector3 {
   const y = Math.sin(latRadians);
 
   return new THREE.Vector3(x, y, z);
+}
+
+export function latLongToQuat(lat: number, long: number): THREE.Quaternion {
+  const radLat = (lat * Math.PI) / 180;
+  const q1 = new THREE.Quaternion();
+  q1.setFromAxisAngle(new THREE.Vector3(0, 0, 1), radLat);
+
+  const radLong = (long * Math.PI) / 180;
+  const q2 = new THREE.Quaternion();
+  q2.setFromAxisAngle(new THREE.Vector3(0, 1, 0), radLong);
+
+  return q1.multiply(q2);
 }
 
 const ZERO = new THREE.Vector3();
