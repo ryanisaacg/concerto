@@ -1,15 +1,12 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import * as THREE from "three";
 import { Material } from "three";
-import { WebGLShader } from "three/src/renderers/webgl/WebGLShader.js";
 
 export function Visualizer() {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const sceneRotation = useRef(new THREE.Vector3());
-  const lineRotation = useRef(new THREE.Vector3());
 
   useEffect(() => {
-    console.log("e");
     if (canvas == null) {
       return;
     }
@@ -24,11 +21,6 @@ export function Visualizer() {
     renderer.setSize(canvas.width, canvas.height);
 
     const root = new THREE.Group();
-
-    /*const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);*/
 
     camera.position.z = 5;
 
@@ -53,28 +45,23 @@ export function Visualizer() {
       createCircle(2),
       new THREE.LineBasicMaterial({ color: "red" }),
     );
-    //circle.rotation.y = Math.PI / 4;
-    //circle.rotation.x = Math.PI / 2;
 
     const lat = 40;
     const long = -73;
 
-    const newJerseyVec = latLongToVec(lat, long).normalize();
     const newJerseyQuat = latLongToQuat(lat, long);
     circle.applyQuaternion(newJerseyQuat);
-    //circle.rotation.y = (80 * Math.PI) / 180;
-    //circle.rotation.z = (-74 * Math.PI) / 180;
     root.add(circle);
-
-    //root.add(lineSegment(new THREE.Vector3(), newJerseyVec, 0x00ff00));
 
     let circleSpeed = 0.01;
     let circleProgress = 2;
 
     scene.add(root);
 
+    const circles = new Map();
+
     function animate() {
-      circle.position.set(0, 0, 1);
+      circle.position.set(0, 0, 1); // (0, 0, 1) produces the same direction as the rotation
       circle.position.applyQuaternion(newJerseyQuat);
       circle.position.multiplyScalar(circleProgress);
 
@@ -84,19 +71,19 @@ export function Visualizer() {
       } else if (circleProgress <= -2) {
         circleSpeed = 0.01;
       }
-      if (Math.abs(circleProgress) !== 2) {
-        const chordLength = Math.sqrt(4 - Math.abs(circleProgress ** 2));
-        circle.geometry = createCircle(chordLength);
+      const chordLength = Math.sqrt(4 - Math.abs(circleProgress ** 2));
+      if (chordLength > 0.0001) {
+        let geometry = circles.get(chordLength);
+        if (geometry == null) {
+          geometry = createCircle(chordLength);
+          circles.set(chordLength, geometry);
+        }
+        circle.geometry = geometry;
       }
 
       root.rotation.x = (sceneRotation.current.x * Math.PI) / 180;
       root.rotation.y = (sceneRotation.current.y * Math.PI) / 180;
       root.rotation.z = (sceneRotation.current.z * Math.PI) / 180;
-      /*{
-        const chordLength = Math.sqrt(4 - Math.abs(circle.position.y ** 2));
-        circle.geometry = createCircle(chordLength);
-        }*/
-      //wireframe.rotation.z = 0.41;
       renderer.render(scene, camera);
     }
     renderer.setAnimationLoop(animate);
@@ -129,35 +116,6 @@ export function Visualizer() {
           value={sceneRotation.current.z}
           onChange={(e) =>
             (sceneRotation.current.z = Number(
-              (e.target as HTMLInputElement).value,
-            ))
-          }
-        />
-      </div>
-      <div>
-        <input
-          type="number"
-          value={lineRotation.current.x}
-          onChange={(e) =>
-            (lineRotation.current.x = Number(
-              (e.target as HTMLInputElement).value,
-            ))
-          }
-        />
-        <input
-          type="number"
-          value={lineRotation.current.y}
-          onChange={(e) =>
-            (lineRotation.current.y = Number(
-              (e.target as HTMLInputElement).value,
-            ))
-          }
-        />
-        <input
-          type="number"
-          value={lineRotation.current.z}
-          onChange={(e) =>
-            (lineRotation.current.z = Number(
               (e.target as HTMLInputElement).value,
             ))
           }
@@ -211,6 +169,7 @@ export function latLongToVec(lat: number, long: number): THREE.Vector3 {
 }
 
 export function latLongToQuat(lat: number, long: number): THREE.Quaternion {
+  // Adapted from https://stackoverflow.com/questions/5437865/longitude-latitude-to-quaternion
   const radLat = (lat * Math.PI) / 180;
   const q1 = new THREE.Quaternion();
   q1.setFromAxisAngle(new THREE.Vector3(0, 0, 1), radLat);
@@ -221,8 +180,6 @@ export function latLongToQuat(lat: number, long: number): THREE.Quaternion {
 
   return q1.multiply(q2);
 }
-
-const ZERO = new THREE.Vector3();
 
 function lineSegment(
   start: THREE.Vector3,
