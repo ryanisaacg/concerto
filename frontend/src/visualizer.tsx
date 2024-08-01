@@ -6,6 +6,7 @@ import { RefObject } from "preact";
 
 const RADIUS = 3;
 const NOTE_SPEED = 0.0000027;
+const EARTH_ROTATION = 0.000001;
 
 export function Visualizer() {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
@@ -127,7 +128,7 @@ async function run(
       }
     }
 
-    root.rotation.y += 0.0005;
+    root.rotation.y += EARTH_ROTATION;
     renderer.render(scene, camera);
   }
   renderer.setAnimationLoop(animate);
