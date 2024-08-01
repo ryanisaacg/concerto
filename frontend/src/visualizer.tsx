@@ -25,35 +25,29 @@ export function Visualizer() {
       <div>
         <button
           onClick={() =>
-            addNote.current?.(new Note(40.69, -73.98, -RADIUS, 0x00ffaa))
+            addNote.current?.(new Note(40.69, -73.98, 0, 0x00ffaa))
           }
         >
           Brooklyn
         </button>
         <button
-          onClick={() =>
-            addNote.current?.(new Note(48.86, 2.35, -RADIUS, 0x00ffaa))
-          }
+          onClick={() => addNote.current?.(new Note(48.86, 2.35, 0, 0x00ffaa))}
         >
           Paris
         </button>
         <button
-          onClick={() =>
-            addNote.current?.(new Note(28.7, 77.1, -RADIUS, 0x00ffaa))
-          }
+          onClick={() => addNote.current?.(new Note(28.7, 77.1, 0, 0x00ffaa))}
         >
           New Delhi
         </button>
         <button
           onClick={() =>
-            addNote.current?.(new Note(-37.81, 144.96, -RADIUS, 0x00ffaa))
+            addNote.current?.(new Note(-37.81, 144.96, 0, 0x00ffaa))
           }
         >
           Melbourne
         </button>
-        <button
-          onClick={() => addNote.current?.(new Note(0, 0, -RADIUS, "red"))}
-        >
+        <button onClick={() => addNote.current?.(new Note(0, 0, 0, "red"))}>
           Null Island
         </button>
       </div>
@@ -120,7 +114,7 @@ async function run(
     }
     let i = 0;
     while (i < notes.length) {
-      if (notes[i].progress >= RADIUS) {
+      if (notes[i].progress >= Math.PI * 2 * RADIUS) {
         root.remove(notes[i].circle);
         notes.splice(i, 1);
       } else {
@@ -190,26 +184,28 @@ class Note {
     this.circle.applyQuaternion(this.quat);
   }
 
-  tick(radius: number, circles: Map<number, THREE.CircleGeometry>) {
-    this.circle.position.set(0, 0, 1); // (0, 0, 1) produces the same direction as the rotation
-    this.circle.position.applyQuaternion(this.quat);
-    this.circle.position.multiplyScalar(this.progress);
-
+  tick(sphereRadius: number, circles: Map<number, THREE.CircleGeometry>) {
     this.progress += this.speed;
-    if (this.progress >= radius) {
-      this.speed = -Math.abs(this.speed);
-    } else if (this.progress <= -radius) {
-      this.speed = Math.abs(this.speed);
-    }
 
-    const chordLength = Math.sqrt(radius ** 2 - Math.abs(this.progress ** 2));
-    if (chordLength > 0.0001) {
-      let geometry = circles.get(chordLength);
+    const radius = sphereRadius * Math.sin(this.progress / (2 * sphereRadius));
+
+    if (radius > 0) {
+      let geometry = circles.get(radius);
       if (geometry == null) {
-        geometry = createCircle(chordLength);
-        circles.set(chordLength, geometry);
+        geometry = createCircle(radius);
+        circles.set(radius, geometry);
       }
       this.circle.geometry = geometry;
     }
+
+    const sign = this.progress >= Math.PI * sphereRadius ? 1 : -1;
+
+    const axialDistance =
+      Math.sqrt(sphereRadius ** 2 - Math.abs(radius ** 2)) * sign;
+    this.circle.position.set(0, 0, 1); // (0, 0, 1) produces the same direction as the rotation
+    this.circle.position.applyQuaternion(this.quat);
+    this.circle.position.multiplyScalar(axialDistance);
+
+    console.log(this.progress, axialDistance);
   }
 }
