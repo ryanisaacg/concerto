@@ -70,7 +70,7 @@ export class VisualizerController {
       }
       let i = 0;
       while (i < this.notes.length) {
-        if (this.notes[i].progress >= Math.PI * 2 * RADIUS) {
+        if (this.notes[i].progress() >= Math.PI * 2 * RADIUS) {
           this.root.remove(this.notes[i].circle);
           this.notes.splice(i, 1);
         } else {
@@ -85,8 +85,13 @@ export class VisualizerController {
     this.renderer = renderer;
   }
 
-  addNote(lat: number, long: number, color: THREE.ColorRepresentation): void {
-    const note = new VisualizerNote(lat, long, 0, color);
+  addNote(
+    lat: number,
+    long: number,
+    timestamp: number,
+    color: THREE.ColorRepresentation,
+  ): void {
+    const note = new VisualizerNote(lat, long, timestamp, color);
     this.root.add(note.circle);
     this.notes.push(note);
   }
@@ -98,18 +103,18 @@ export class VisualizerController {
 
 class VisualizerNote {
   quat: THREE.Quaternion;
-  progress: number;
+  timestamp: number;
   speed: number;
   circle: THREE.LineLoop;
 
   constructor(
     lat: number,
     long: number,
-    progress: number,
+    timestamp: number,
     color: THREE.ColorRepresentation,
   ) {
     this.quat = latLongToQuat(lat, long);
-    this.progress = progress;
+    this.timestamp = timestamp;
     this.speed = NOTE_SPEED;
     this.circle = new THREE.LineLoop(
       createCircle(2),
@@ -118,10 +123,14 @@ class VisualizerNote {
     this.circle.applyQuaternion(this.quat);
   }
 
-  tick(sphereRadius: number, circles: Map<number, THREE.CircleGeometry>) {
-    this.progress += this.speed * 1000;
+  progress() {
+    const timeDiff = Date.now() - this.timestamp;
+    return (timeDiff / 10) * NOTE_SPEED * 1000;
+  }
 
-    const radius = sphereRadius * Math.sin(this.progress / (2 * sphereRadius));
+  tick(sphereRadius: number, circles: Map<number, THREE.CircleGeometry>) {
+    const radius =
+      sphereRadius * Math.sin(this.progress() / (2 * sphereRadius));
 
     if (radius > 0) {
       let geometry = circles.get(radius);
@@ -132,7 +141,7 @@ class VisualizerNote {
       this.circle.geometry = geometry;
     }
 
-    const sign = this.progress >= Math.PI * sphereRadius ? 1 : -1;
+    const sign = this.progress() >= Math.PI * sphereRadius ? 1 : -1;
 
     const axialDistance =
       Math.sqrt(sphereRadius ** 2 - Math.abs(radius ** 2)) * sign;
