@@ -7,6 +7,19 @@ export class AudioPlayer {
     this.keys = new Map();
   }
 
+  init() {
+    const gainNode = this.ctx.createGain();
+    const oscillator = new OscillatorNode(this.ctx, {
+      type: "sine",
+      frequency: frequencies["C"],
+    });
+    oscillator.connect(gainNode);
+    oscillator.start();
+
+    gainNode.gain.value = 0;
+    gainNode.connect(this.ctx.destination);
+  }
+
   playNote(note: Note) {
     let gainNode = this.keys.get(note);
     if (gainNode == null) {

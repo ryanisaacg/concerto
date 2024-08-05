@@ -9,10 +9,12 @@ import { Visualizer } from "./visualizer";
 import { VisualizerController } from "./visualizer-controller";
 import { Client } from "./client";
 import { arcDistanceBetweenCoords, NOTE_SPEED, RADIUS } from "./physics";
+import { AudioPlayer } from "./player";
 
 export function App() {
   const [coords, setCoords] = useState({ lat: 0, long: 0 });
   const visualizer = useRef<VisualizerController | null>(null);
+  const player = useMemo(() => new AudioPlayer(), []);
 
   const client = useMemo(() => {
     const ws = new WebSocket("ws://localhost:9003");
@@ -32,7 +34,7 @@ export function App() {
       const noteDistance = arcDistanceBetweenCoords(coords, msg, RADIUS);
       const time = (noteDistance / NOTE_SPEED) * 2;
       const skew = Date.now() - msg.timestamp;
-      setTimeout(() => console.log("ding!"), time - skew);
+      setTimeout(() => player.playNote("C"), time - skew);
     });
     return cleanup;
   }, [client, coords, addNote]);
@@ -42,10 +44,14 @@ export function App() {
     const { lat, long } = coords;
     addNote(lat, long, timestamp, "black");
     client.send({ lat, long, timestamp });
+    player.playNote("C");
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "row" }}>
+    <div
+      style={{ display: "flex", flexDirection: "row" }}
+      onMouseDown={() => player.init()}
+    >
       <Visualizer controller={visualizer} />
       <div>
         <button onClick={playNote}> Play Note </button>
