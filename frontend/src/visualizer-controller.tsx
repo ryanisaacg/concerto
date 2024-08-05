@@ -1,10 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
-
-const RADIUS = 3;
-const NOTE_SPEED = 0.0000027;
-const EARTH_ROTATION = 0.000001;
-const EARTH_TILT = (23.5 * Math.PI) / 180;
+import { RADIUS, NOTE_SPEED, EARTH_ROTATION, EARTH_TILT } from "./physics";
 
 export class VisualizerController {
   private root: THREE.Group;
@@ -78,7 +74,7 @@ export class VisualizerController {
         }
       }
 
-      this.root.applyQuaternion(spinOnAxis);
+      //this.root.applyQuaternion(spinOnAxis);
       renderer.render(scene, camera);
     };
     renderer.setAnimationLoop(animate);
@@ -125,7 +121,7 @@ class VisualizerNote {
 
   progress() {
     const timeDiff = Date.now() - this.timestamp;
-    return (timeDiff / 10) * NOTE_SPEED * 1000;
+    return timeDiff * NOTE_SPEED;
   }
 
   tick(sphereRadius: number, circles: Map<number, THREE.CircleGeometry>) {
