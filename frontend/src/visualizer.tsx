@@ -7,6 +7,7 @@ import { RefObject } from "preact";
 const RADIUS = 3;
 const NOTE_SPEED = 0.0000027;
 const EARTH_ROTATION = 0.000001;
+const EARTH_TILT = (23.5 * Math.PI) / 180;
 
 export function Visualizer() {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
@@ -105,7 +106,14 @@ async function run(
     notes.push(note);
   };
 
-  root.rotation.z = (23.5 * Math.PI) / 180;
+  const axialTilt = new THREE.Quaternion();
+  axialTilt.setFromAxisAngle(new THREE.Vector3(0, 0, 1), EARTH_TILT);
+  root.applyQuaternion(axialTilt);
+
+  const spinOnAxis = new THREE.Quaternion();
+  const earthPoleAxis = new THREE.Vector3(0, 1, 0);
+  earthPoleAxis.applyQuaternion(axialTilt);
+  spinOnAxis.setFromAxisAngle(earthPoleAxis, EARTH_ROTATION * 1000);
 
   function animate() {
     controls.update();
@@ -122,7 +130,7 @@ async function run(
       }
     }
 
-    root.rotation.y += EARTH_ROTATION;
+    root.applyQuaternion(spinOnAxis);
     renderer.render(scene, camera);
   }
   renderer.setAnimationLoop(animate);
@@ -185,7 +193,7 @@ class Note {
   }
 
   tick(sphereRadius: number, circles: Map<number, THREE.CircleGeometry>) {
-    this.progress += this.speed;
+    this.progress += this.speed * 1000;
 
     const radius = sphereRadius * Math.sin(this.progress / (2 * sphereRadius));
 
@@ -205,7 +213,5 @@ class Note {
     this.circle.position.set(0, 0, 1); // (0, 0, 1) produces the same direction as the rotation
     this.circle.position.applyQuaternion(this.quat);
     this.circle.position.multiplyScalar(axialDistance);
-
-    console.log(this.progress, axialDistance);
   }
 }
