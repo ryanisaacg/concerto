@@ -7,7 +7,7 @@ export class AudioPlayer {
     this.keys = new Map();
   }
 
-  play(note: Note) {
+  playNote(note: Note) {
     let gainNode = this.keys.get(note);
     if (gainNode == null) {
       gainNode = this.ctx.createGain();

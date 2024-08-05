@@ -42,7 +42,7 @@ function SyncReady({ client }: { client: SyncClient }) {
   const pointsRef = useRef<Map<string, CanvasPoint>>(new Map());
   const player = new AudioPlayer(); // TODO memo
   const onPianoPlay = (note: Note) => {
-    player.play(note);
+    player.playNote(note);
     client.play(note);
   };
 
@@ -81,7 +81,7 @@ function SyncReady({ client }: { client: SyncClient }) {
         const playInMS = timeToNoteS * 1000 - (Date.now() - ping.timestamp);
         if (playInMS > 0) {
           console.log(`Playing ${ping.note} in ${playInMS}`);
-          setTimeout(() => player.play(ping.note), playInMS);
+          setTimeout(() => player.playNote(ping.note), playInMS);
         }
       }
     };
