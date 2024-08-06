@@ -9,7 +9,7 @@ import { Visualizer } from "./visualizer";
 import { VisualizerController } from "./visualizer-controller";
 import { Client } from "./client";
 import { arcDistanceBetweenCoords, NOTE_SPEED, RADIUS } from "./physics";
-import { AudioPlayer } from "./player";
+import { AudioPlayer, Note } from "./player";
 
 export function App() {
   const [coords, setCoords] = useState({ lat: 0, long: 0 });
@@ -30,21 +30,22 @@ export function App() {
 
   useEffect(() => {
     const cleanup = client.addListener((msg) => {
+      console.log(msg);
       addNote(msg.lat, msg.long, msg.timestamp, "red");
       const noteDistance = arcDistanceBetweenCoords(coords, msg, RADIUS);
       const time = (noteDistance / NOTE_SPEED) * 2;
       const skew = Date.now() - msg.timestamp;
-      setTimeout(() => player.playNote("C"), time - skew);
+      setTimeout(() => player.synthesizeBell(msg.note), time - skew);
     });
     return cleanup;
   }, [client, coords, addNote]);
 
-  const playNote = () => {
+  const playNote = (note: Note) => {
     const timestamp = Date.now();
     const { lat, long } = coords;
     addNote(lat, long, timestamp, "black");
-    client.send({ lat, long, timestamp });
-    player.playNote("C");
+    client.send({ lat, long, timestamp, note });
+    player.synthesizeBell(note);
   };
 
   return (
@@ -53,8 +54,10 @@ export function App() {
       onMouseDown={() => player.init()}
     >
       <Visualizer controller={visualizer} />
-      <div>
-        <button onClick={playNote}> Play Note </button>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {NOTES.map((note) => (
+          <button onClick={() => playNote(note)}> Play {note} </button>
+        ))}
       </div>
       <div style={{ display: "flex", flexDirection: "column" }}>
         ({coords.lat}, {coords.long})
@@ -80,3 +83,18 @@ export function App() {
     </div>
   );
 }
+
+const NOTES: Note[] = [
+  "C",
+  "C#",
+  "D",
+  "D#",
+  "E",
+  "F",
+  "F#",
+  "G",
+  "G#",
+  "A",
+  "A#",
+  "B",
+];

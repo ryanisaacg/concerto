@@ -1,3 +1,5 @@
+import { Note } from "./player";
+
 export class Client {
   private ws: WebSocket;
   private buffer: Array<PlayedNote> | null;
@@ -42,6 +44,7 @@ export type PlayedNote = {
   lat: number;
   long: number;
   timestamp: number;
+  note: Note;
 };
 
 type Listener = (message: PlayedNote) => void;

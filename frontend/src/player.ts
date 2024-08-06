@@ -11,7 +11,7 @@ export class AudioPlayer {
     const gainNode = this.ctx.createGain();
     const oscillator = new OscillatorNode(this.ctx, {
       type: "sine",
-      frequency: frequencies["C"],
+      frequency: FREQUENCIES["C"],
     });
     oscillator.connect(gainNode);
     oscillator.start();
@@ -27,7 +27,7 @@ export class AudioPlayer {
 
       const oscillator = new OscillatorNode(this.ctx, {
         type: "sine",
-        frequency: frequencies[note],
+        frequency: FREQUENCIES[note],
       });
       oscillator.connect(gainNode);
       oscillator.start();
@@ -45,7 +45,46 @@ export class AudioPlayer {
     );
     gainNode.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.8);
   }
+
+  synthesizeBell(note: Note) {
+    const gainNode = this.ctx.createGain();
+
+    const baseFreq = FREQUENCIES[note];
+    for (let i = 0; i < AMPLITUDES.length; i += 1) {
+      const oscillator = new OscillatorNode(this.ctx, {
+        type: "sine",
+        frequency: baseFreq * BELL_DETUNE[i],
+      });
+      const freqGain = this.ctx.createGain();
+      freqGain.gain.value = AMPLITUDES[i];
+      oscillator.connect(freqGain);
+      freqGain.connect(gainNode);
+      oscillator.start();
+    }
+
+    gainNode.connect(this.ctx.destination);
+    this.keys.set(note, gainNode);
+
+    // bell parameters
+    const attack = 0.1;
+    const decay = 0.25;
+    const release = 1.4;
+
+    gainNode.gain.value = 0;
+    gainNode.gain.linearRampToValueAtTime(0.8, this.ctx.currentTime + attack);
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.05,
+      this.ctx.currentTime + attack + decay,
+    );
+    gainNode.gain.linearRampToValueAtTime(
+      0,
+      this.ctx.currentTime + attack + decay + release,
+    );
+  }
 }
+
+const AMPLITUDES = [1, 0.6, 0.4, 0.25, 0.2, 0.15];
+const BELL_DETUNE = [1, 2, 3, 4.2, 5.4, 6.8];
 
 export type Note =
   | "C"
@@ -61,7 +100,7 @@ export type Note =
   | "A#"
   | "B";
 
-const frequencies: Record<Note, number> = {
+const FREQUENCIES: Record<Note, number> = {
   C: 261.63,
   "C#": 277.18,
   D: 293.66,
