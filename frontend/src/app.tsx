@@ -10,9 +10,66 @@ import { VisualizerController } from "./visualizer-controller";
 import { Client } from "./client";
 import { arcDistanceBetweenCoords, NOTE_SPEED, RADIUS } from "./physics";
 import { AudioPlayer, Note } from "./player";
+import { LocationSelector } from "./location";
 
 export function App() {
-  const [coords, setCoords] = useState({ lat: 0, long: 0 });
+  const [coords, setCoords] = useState<{ lat: number; long: number } | null>(
+    null,
+  );
+
+  return coords ? (
+    <RealApp coords={coords} />
+  ) : (
+    <SetCoords setCoords={setCoords} />
+  );
+}
+
+function SetCoords({
+  setCoords,
+}: {
+  setCoords: (coords: { lat: number; long: number }) => void;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100vw",
+        alignItems: "center",
+      }}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <h3> Your Location </h3>
+          <LocationSelector setLocation={setCoords} />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <h3> Pick an arbitrary city </h3>
+          <button onClick={() => setCoords({ lat: 40.69, long: -73.98 })}>
+            Brooklyn
+          </button>
+          <button onClick={() => setCoords({ lat: 40.7, long: -74.04 })}>
+            Jersey City
+          </button>
+          <button onClick={() => setCoords({ lat: 48.86, long: 2.35 })}>
+            Paris
+          </button>
+          <button onClick={() => setCoords({ lat: 28.7, long: 77.1 })}>
+            New Delhi
+          </button>
+          <button onClick={() => setCoords({ lat: -37.81, long: 144.96 })}>
+            Melbourne
+          </button>
+          <button onClick={() => setCoords({ lat: 0, long: 0 })}>
+            Null Island
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RealApp({ coords }: { coords: { lat: number; long: number } }) {
   const visualizer = useRef<VisualizerController | null>(null);
   const player = useMemo(() => new AudioPlayer(), []);
 
@@ -35,7 +92,10 @@ export function App() {
       const noteDistance = arcDistanceBetweenCoords(coords, msg, RADIUS);
       const time = (noteDistance / NOTE_SPEED) * 2;
       const skew = Date.now() - msg.timestamp;
-      setTimeout(() => player.synthesizeBell(msg.note), time - skew);
+      const timeout = time - skew;
+      if (timeout > 0) {
+        setTimeout(() => player.synthesizeBell(msg.note), timeout);
+      }
     });
     return cleanup;
   }, [client, coords, addNote]);
@@ -50,35 +110,27 @@ export function App() {
 
   return (
     <div
-      style={{ display: "flex", flexDirection: "row" }}
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center",
+        width: "100vw",
+        gap: 32,
+      }}
       onMouseDown={() => player.init()}
     >
       <Visualizer controller={visualizer} />
-      <div style={{ display: "flex", flexDirection: "column" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
+        ({coords.lat}, {coords.long})
         {NOTES.map((note) => (
           <button onClick={() => playNote(note)}> Play {note} </button>
         ))}
-      </div>
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        ({coords.lat}, {coords.long})
-        <button onClick={() => setCoords({ lat: 40.69, long: -73.98 })}>
-          Brooklyn
-        </button>
-        <button onClick={() => setCoords({ lat: 40.7, long: -74.04 })}>
-          Jersey City
-        </button>
-        <button onClick={() => setCoords({ lat: 48.86, long: 2.35 })}>
-          Paris
-        </button>
-        <button onClick={() => setCoords({ lat: 28.7, long: 77.1 })}>
-          New Delhi
-        </button>
-        <button onClick={() => setCoords({ lat: -37.81, long: 144.96 })}>
-          Melbourne
-        </button>
-        <button onClick={() => setCoords({ lat: 0, long: 0 })}>
-          Null Island
-        </button>
       </div>
     </div>
   );
