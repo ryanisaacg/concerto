@@ -24,7 +24,7 @@ export class VisualizerController {
 
     camera.position.z = 5;
 
-    const earth: THREE.Texture = new THREE.TextureLoader().load("/earth.png");
+    const earth: THREE.Texture = new THREE.TextureLoader().load("earth.png");
     earth.wrapS = THREE.RepeatWrapping;
     earth.wrapT = THREE.RepeatWrapping;
     const sphere = new THREE.Mesh(
