@@ -15,9 +15,9 @@ use tokio_tungstenite::{accept_async, tungstenite::Message};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let addr = "127.0.0.1:9003";
+    let addr = "0.0.0.0:80";
     let listener = TcpListener::bind(&addr).await?;
-    eprintln!("Listening on 9003");
+    eprintln!("Listening on 80");
 
     let (ping_sender, mut buffer_recv) = broadcast::channel(1024);
 
@@ -35,7 +35,9 @@ async fn main() -> anyhow::Result<()> {
         }
     });
 
+    eprintln!("Accepting connections");
     while let Ok((stream, _)) = listener.accept().await {
+        eprintln!("Accepted TCP connection");
         let sender = ping_sender.clone();
         let buffer = buffer.clone();
         tokio::spawn(async move { client_task(stream, sender, buffer).await.unwrap() });
@@ -57,6 +59,7 @@ async fn client_task(
     let mut receiver = sender.subscribe();
 
     let ws_stream = accept_async(stream).await?;
+    eprintln!("Accepted new weboscket {client_id}");
     let (mut ws_send, mut ws_recv) = ws_stream.split();
 
     for (sender_id, ping) in old_message_buffer.read().await.iter() {
