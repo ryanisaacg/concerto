@@ -74,7 +74,7 @@ function RealApp({ coords }: { coords: { lat: number; long: number } }) {
   const player = useMemo(() => new AudioPlayer(), []);
 
   const client = useMemo(() => {
-    const ws = new WebSocket("ws://localhost:9003");
+    const ws = new WebSocket("ws://35.209.117.175/");
     return new Client(ws);
   }, []);
 
