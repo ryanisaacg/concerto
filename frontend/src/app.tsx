@@ -102,7 +102,7 @@ function RealApp({ coords }: { coords: { lat: number; long: number } }) {
   const player = useMemo(() => new AudioPlayer(), []);
 
   const client = useMemo(() => {
-    const ws = new WebSocket("ws://35.209.117.175/");
+    const ws = new WebSocket("wss://concerto.ryanapisaacg.com");
     return new Client(ws);
   }, []);
 
