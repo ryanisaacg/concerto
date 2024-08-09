@@ -15,9 +15,9 @@ use tokio_tungstenite::{accept_async, tungstenite::Message};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let addr = "0.0.0.0:80";
+    let addr = "0.0.0.0:8080";
     let listener = TcpListener::bind(&addr).await?;
-    eprintln!("Listening on 80");
+    eprintln!("Listening on 8080");
 
     let (ping_sender, mut buffer_recv) = broadcast::channel(1024);
 
