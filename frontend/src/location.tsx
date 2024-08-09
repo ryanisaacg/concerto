@@ -13,9 +13,10 @@ export type LocationSelectionState = "waiting" | "denied" | "failed";
 
 export function LocationSelector({ setLocation }: LocationSelectorProps) {
   const [selectionState, setSelectionState] =
-    useState<LocationSelectionState>("waiting");
+    useState<LocationSelectionState | null>(null);
 
-  useEffect(() => {
+  const tryGeolocation = () => {
+    setSelectionState("waiting");
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (navObject) => {
@@ -35,11 +36,17 @@ export function LocationSelector({ setLocation }: LocationSelectorProps) {
     } else {
       setSelectionState("failed");
     }
-  }, [setLocation]);
+  };
 
   return (
     <>
-      {selectionState === "waiting" ? (
+      {selectionState === null ? (
+        <>
+          <button onClick={tryGeolocation}> Use my location </button>
+          Your location will be transmitted alongside any notes you send. It
+          will not be stored anywhere, and is entirely anonymous.
+        </>
+      ) : selectionState === "waiting" ? (
         <p> Waiting for geolocation... </p>
       ) : (
         <p>

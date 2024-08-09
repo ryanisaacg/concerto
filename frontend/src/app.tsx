@@ -10,6 +10,7 @@ import { VisualizerController } from "./visualizer-controller";
 import { Client } from "./client";
 import { arcDistanceBetweenCoords, NOTE_SPEED, RADIUS } from "./physics";
 import { AudioPlayer, Note } from "./player";
+import { LocationSelector } from "./location";
 
 export function App() {
   const [coords, setCoords] = useState<{ lat: number; long: number } | null>(
@@ -40,7 +41,7 @@ function SetCoords({
       <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <h3> Your Location </h3>
-          <LatLongSelector setCoords={setCoords} />
+          <LocationSelector setLocation={setCoords} />
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <h3> Pick an arbitrary city </h3>
@@ -65,35 +66,6 @@ function SetCoords({
         </div>
       </div>
     </div>
-  );
-}
-
-function LatLongSelector({
-  setCoords,
-}: {
-  setCoords: (coords: { lat: number; long: number }) => void;
-}) {
-  const [lat, setLat] = useState(0);
-  const [long, setLong] = useState(0);
-
-  return (
-    <>
-      <label for="lat"> Latitude </label>
-      <input
-        value={lat}
-        onChange={(e) => setLat(Number((e.target as HTMLInputElement).value))}
-        placeholder="Latitude"
-        label="lat"
-      />
-      <label for="long"> Longitude </label>
-      <input
-        value={long}
-        onChange={(e) => setLong(Number((e.target as HTMLInputElement).value))}
-        placeholder="Longitude"
-        label="long"
-      />
-      <button onClick={() => setCoords({ lat, long })}> Submit </button>
-    </>
   );
 }
 
