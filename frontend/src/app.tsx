@@ -128,7 +128,7 @@ function RealApp({ coords }: { coords: { lat: number; long: number } }) {
   const playNote = (note: Note) => {
     const timestamp = Date.now();
     const { lat, long } = coords;
-    addNote(lat, long, timestamp, "white");
+    addNote(lat, long, timestamp, NOTE_TO_COLOR[note]);
     client.send({ lat, long, timestamp, note });
     player.synthesizeBell(note);
   };
