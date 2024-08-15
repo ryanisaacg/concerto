@@ -198,7 +198,7 @@ const COLORS = [
   "darkslateblue",
   "cadetblue",
   "darkslategrey",
-  "turqoise",
+  "turquoise",
 ];
 
 const NOTE_TO_COLOR = Object.fromEntries(
