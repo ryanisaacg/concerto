@@ -137,25 +137,35 @@ function RealApp({ coords }: { coords: { lat: number; long: number } }) {
     <div
       style={{
         display: "flex",
-        flexDirection: "row",
-        justifyContent: "center",
+        flexDirection: "column",
         width: "100vw",
-        gap: 32,
+        alignItems: "center",
       }}
-      onMouseDown={() => player.init()}
     >
-      <Visualizer controller={visualizer} coords={coords} />
+      <h1> Concerto </h1>
       <div
         style={{
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
           justifyContent: "center",
+          width: "100vw",
+          gap: 32,
         }}
+        onMouseDown={() => player.init()}
       >
-        ({coords.lat}, {coords.long})
-        {NOTES.map((note) => (
-          <button onClick={() => playNote(note)}> Play {note} </button>
-        ))}
+        <Visualizer controller={visualizer} coords={coords} />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
+        >
+          ({coords.lat}, {coords.long})
+          {NOTES.map((note) => (
+            <button onClick={() => playNote(note)}> Play {note} </button>
+          ))}
+        </div>
       </div>
     </div>
   );
