@@ -40,8 +40,8 @@ function SetCoords({
     >
       <h1> Concerto </h1>
       <p>
-        Play music in a shared world. Hear other people's note as they reach
-        your location.
+        Play bells in a shared world. Watch other people's notes, and hear them
+        when they reach your location.
         <br />
         Use your location, input coordinates, or pick a city to play.
         <br />
@@ -85,6 +85,9 @@ function SetCoords({
           </button>
           <button onClick={() => setCoords({ lat: 35.67, long: 139.65 })}>
             Tokyo
+          </button>
+          <button onClick={() => setCoords({ lat: 49.28, long: -123.12 })}>
+            Vancouver
           </button>
         </div>
       </div>
