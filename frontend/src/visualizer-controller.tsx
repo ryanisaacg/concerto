@@ -7,7 +7,11 @@ export class VisualizerController {
   private renderer: THREE.WebGLRenderer;
   private notes: VisualizerNote[];
 
-  constructor(canvas: HTMLCanvasElement, onEarthLoad: () => void) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    coords: { lat: number; long: number },
+    onEarthLoad: () => void,
+  ) {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -22,7 +26,9 @@ export class VisualizerController {
 
     this.root = new THREE.Group();
 
-    camera.position.z = 5;
+    camera.position.z = -5;
+    const initialAngle = latLongToQuat(coords.lat, coords.long);
+    camera.position.applyQuaternion(initialAngle);
 
     const earth: THREE.Texture = new THREE.TextureLoader().load(
       "earth.png",

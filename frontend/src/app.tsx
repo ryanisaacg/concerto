@@ -144,7 +144,7 @@ function RealApp({ coords }: { coords: { lat: number; long: number } }) {
       }}
       onMouseDown={() => player.init()}
     >
-      <Visualizer controller={visualizer} />
+      <Visualizer controller={visualizer} coords={coords} />
       <div
         style={{
           display: "flex",
