@@ -38,30 +38,53 @@ function SetCoords({
         alignItems: "center",
       }}
     >
+      <h1> Concerto </h1>
+      <p>
+        Play music in a shared world. Hear other people's note as they reach
+        your location.
+        <br />
+        Use your location, input coordinates, or pick a city to play.
+        <br />
+        Mobile not well supported. Best experienced on desktop.
+      </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <h3> Your Location </h3>
           <LocationSelector setLocation={setCoords} />
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <h3> Pick an arbitrary city </h3>
+          <h3 style={{ textAlign: "center" }}> Pick an arbitrary city </h3>
+          <button onClick={() => setCoords({ lat: 33.89, long: 35.5 })}>
+            Beruit
+          </button>
           <button onClick={() => setCoords({ lat: 40.69, long: -73.98 })}>
             Brooklyn
           </button>
-          <button onClick={() => setCoords({ lat: 40.7, long: -74.04 })}>
-            Jersey City
-          </button>
-          <button onClick={() => setCoords({ lat: 48.86, long: 2.35 })}>
-            Paris
-          </button>
-          <button onClick={() => setCoords({ lat: 28.7, long: 77.1 })}>
-            New Delhi
+          <button onClick={() => setCoords({ lat: 6.52, long: 3.37 })}>
+            Lagos
           </button>
           <button onClick={() => setCoords({ lat: -37.81, long: 144.96 })}>
             Melbourne
           </button>
-          <button onClick={() => setCoords({ lat: 0, long: 0 })}>
-            Null Island
+          <button onClick={() => setCoords({ lat: 19.43, long: -99.13 })}>
+            Mexico City
+          </button>
+          <button onClick={() => setCoords({ lat: -1.2, long: 36.82 })}>
+            Nairobi
+          </button>
+          <button onClick={() => setCoords({ lat: 28.7, long: 77.1 })}>
+            New Delhi
+          </button>
+          <button onClick={() => setCoords({ lat: 48.86, long: 2.35 })}>
+            Paris
+          </button>
+          <button onClick={() => setCoords({ lat: -23.55, long: -46.63 })}>
+            São Paulo
+          </button>
+          <button onClick={() => setCoords({ lat: -33.44, long: -70.66 })}>
+            Santiago
+          </button>
+          <button onClick={() => setCoords({ lat: 35.67, long: 139.65 })}>
+            Tokyo
           </button>
         </div>
       </div>

@@ -40,11 +40,12 @@ export function LocationSelector({ setLocation }: LocationSelectorProps) {
 
   return (
     <>
+      <h3 style={{ textAlign: "center" }}> Use Your Location </h3>
       {selectionState === null ? (
         <>
           <button onClick={tryGeolocation}> Use my location </button>
-          Your location will be transmitted alongside any notes you send. It
-          will not be stored anywhere, and is entirely anonymous.
+          Your location will be transmitted anonymously alongside any notes you
+          send. It will not be stored or saved anywhere.
         </>
       ) : selectionState === "waiting" ? (
         <p> Waiting for geolocation... </p>
@@ -66,6 +67,7 @@ function LatLongSelector({ setLocation }: LocationSelectorProps) {
 
   return (
     <>
+      <h3 style={{ textAlign: "center" }}> Enter Coordinates </h3>
       <label for="lat"> Latitude </label>
       <input
         value={lat}
