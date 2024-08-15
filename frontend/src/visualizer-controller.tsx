@@ -66,7 +66,7 @@ export class VisualizerController {
     const spinOnAxis = new THREE.Quaternion();
     const earthPoleAxis = new THREE.Vector3(0, 1, 0);
     earthPoleAxis.applyQuaternion(axialTilt);
-    spinOnAxis.setFromAxisAngle(earthPoleAxis, EARTH_ROTATION * 1000);
+    spinOnAxis.setFromAxisAngle(earthPoleAxis, EARTH_ROTATION * 150);
 
     const animate = () => {
       controls.update();
@@ -83,7 +83,7 @@ export class VisualizerController {
         }
       }
 
-      //this.root.applyQuaternion(spinOnAxis);
+      this.root.applyQuaternion(spinOnAxis);
       renderer.render(scene, camera);
     };
     renderer.setAnimationLoop(animate);
