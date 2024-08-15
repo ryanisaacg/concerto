@@ -110,8 +110,7 @@ function RealApp({ coords }: { coords: { lat: number; long: number } }) {
 
   useEffect(() => {
     const cleanup = client.addListener((msg) => {
-      console.log(msg);
-      addNote(msg.lat, msg.long, msg.timestamp, "red");
+      addNote(msg.lat, msg.long, msg.timestamp, NOTE_TO_COLOR[msg.note]);
       const noteDistance = arcDistanceBetweenCoords(coords, msg, RADIUS);
       const time = (noteDistance / NOTE_SPEED) * 2;
       const skew = Date.now() - msg.timestamp;
@@ -126,7 +125,7 @@ function RealApp({ coords }: { coords: { lat: number; long: number } }) {
   const playNote = (note: Note) => {
     const timestamp = Date.now();
     const { lat, long } = coords;
-    addNote(lat, long, timestamp, "black");
+    addNote(lat, long, timestamp, "white");
     client.send({ lat, long, timestamp, note });
     player.synthesizeBell(note);
   };
@@ -173,3 +172,22 @@ const NOTES: Note[] = [
   "A#",
   "B",
 ];
+
+const COLORS = [
+  "red",
+  "darkred",
+  "orange",
+  "saddlebrown",
+  "hotpink",
+  "yellow",
+  "olive",
+  "purple",
+  "darkslateblue",
+  "cadetblue",
+  "darkslategrey",
+  "turqoise",
+];
+
+const NOTE_TO_COLOR = Object.fromEntries(
+  COLORS.map((color, i) => [NOTES[i], color]),
+);
