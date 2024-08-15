@@ -8,15 +8,24 @@ interface VisualizerProps {
 
 export function Visualizer({ controller }: VisualizerProps) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
+  const [isEarthLoaded, setIsEarthLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     if (canvas == null) {
       return;
     }
-    const visualizer = new VisualizerController(canvas);
+    setIsEarthLoaded(false);
+    const visualizer = new VisualizerController(canvas, () => {
+      setIsEarthLoaded(true);
+    });
     controller.current = visualizer;
     return () => visualizer.stop();
   }, [canvas]);
 
-  return <canvas ref={setCanvas} width={800} height={600} />;
+  return (
+    <div>
+      {isEarthLoaded ? null : <p> Loading the Earth... </p>}
+      <canvas ref={setCanvas} width={800} height={600} />
+    </div>
+  );
 }

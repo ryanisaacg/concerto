@@ -7,7 +7,7 @@ export class VisualizerController {
   private renderer: THREE.WebGLRenderer;
   private notes: VisualizerNote[];
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, onEarthLoad: () => void) {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -24,7 +24,10 @@ export class VisualizerController {
 
     camera.position.z = 5;
 
-    const earth: THREE.Texture = new THREE.TextureLoader().load("earth.png");
+    const earth: THREE.Texture = new THREE.TextureLoader().load(
+      "earth.png",
+      onEarthLoad,
+    );
     earth.wrapS = THREE.RepeatWrapping;
     earth.wrapT = THREE.RepeatWrapping;
     const sphere = new THREE.Mesh(
