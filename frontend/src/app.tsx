@@ -118,8 +118,8 @@ function RealApp({ coords }: { coords: { lat: number; long: number } }) {
       const time = (noteDistance / NOTE_SPEED) * 2;
       const skew = Date.now() - msg.timestamp;
       const timeout = time - skew;
-      if (timeout > 0) {
-        setTimeout(() => player.synthesizeBell(msg.note), timeout);
+      if (timeout > -500) {
+        setTimeout(() => player.synthesizeBell(msg.note), Math.max(timeout, 0));
       }
     });
     return cleanup;
